@@ -1,5 +1,6 @@
 package com.github.sidneymiranda.authservice.domain.infra.security;
 
+import com.github.sidneymiranda.authservice.domain.user.UserRole;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -27,8 +28,9 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(request -> request
+                        .requestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")).permitAll()
                         .requestMatchers(AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/auth/login")).permitAll()
-                        .requestMatchers(AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/auth/register")).permitAll()
+                        .requestMatchers(AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/auth/register")).hasRole(UserRole.ADMIN.name())
                         .anyRequest().authenticated()
                 ).headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
                 .build();
