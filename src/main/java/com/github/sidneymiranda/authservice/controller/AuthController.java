@@ -1,9 +1,11 @@
 package com.github.sidneymiranda.authservice.controller;
 
+import com.github.sidneymiranda.authservice.domain.infra.security.TokenService;
 import com.github.sidneymiranda.authservice.domain.user.AuthenticationDTO;
 import com.github.sidneymiranda.authservice.domain.user.RegisterDTO;
 import com.github.sidneymiranda.authservice.domain.user.RegisterResponse;
 import com.github.sidneymiranda.authservice.domain.user.User;
+import com.github.sidneymiranda.authservice.domain.user.domain.infra.security.LoginResponseDTO;
 import com.github.sidneymiranda.authservice.repository.UserRepository;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -26,22 +28,23 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
+    private final TokenService tokenService;
 
-    public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository) {
+    public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository, TokenService tokenService) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
+        this.tokenService = tokenService;
     }
 
     @PostMapping("/login")
-    public ResponseEntity login(@RequestBody @Valid AuthenticationDTO auth) throws Exception {
-        var usernamePassword = new UsernamePasswordAuthenticationToken(auth.login(), auth.password());
+    public ResponseEntity<?> login(@RequestBody @Valid AuthenticationDTO authRequest) {
+        var usernamePassword = new UsernamePasswordAuthenticationToken(authRequest.login(), authRequest.password());
 
-        try {
-            this.authenticationManager.authenticate(usernamePassword);
-        } catch (Exception ex) {
-            throw new Exception("Invalid login/password");
-        }
-        return ResponseEntity.accepted().build();
+        var auth = this.authenticationManager.authenticate(usernamePassword);
+
+        var token = tokenService.generateToken((User) auth.getPrincipal());
+
+        return ResponseEntity.ok(new LoginResponseDTO(token));
     }
 
     @PostMapping("/register")
