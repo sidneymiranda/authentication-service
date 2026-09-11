@@ -1,4 +1,6 @@
 package com.github.sidneymiranda.authservice.domain.user;
 
-public record RegisterDTO(String login, String password, UserRole role) {
+import com.github.sidneymiranda.authservice.controller.validator.ValidPassword;
+
+public record RegisterDTO(String login, @ValidPassword String password, String role) {
 }

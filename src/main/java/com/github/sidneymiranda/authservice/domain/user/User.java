@@ -22,6 +22,7 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
+    @Column(nullable = false, unique = true)
     private String login;
 
     private String password;
@@ -29,10 +30,10 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
-    public User(String login, String password, UserRole role) {
+    public User(String login, String password, String role) {
         this.login = login;
         this.password = password;
-        this.role = role;
+        this.role = UserRole.USER.name().equals(role) ? UserRole.USER : UserRole.ADMIN;
     }
 
     @Override
@@ -51,25 +52,5 @@ public class User implements UserDetails {
     @Override
     public String getUsername() {
         return this.login;
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
     }
 }

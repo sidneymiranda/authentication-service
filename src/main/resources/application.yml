@@ -1,7 +1,22 @@
 spring:
   profiles:
-    active: DEV
+    active: ${SPRING_PROFILES_ACTIVE}
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    database-platform: ${SPRING_JPA_DATABASE_PLATFORM}
+  h2:
+    console:
+      enabled: ${SPRING_H2_CONSOLE_ENABLED}
+      path: ${SPRING_H2_CONSOLE_PATH}
 api:
   security:
     token:
-      secret: ${API_SECURITY_TOKEN_SECRET:test}
+      secret: ${API_SECURITY_TOKEN_SECRET}
+      issuer: ${API_SECURITY_TOKEN_ISSUER}
+      expiration-hours: ${API_SECURITY_TOKEN_EXPIRATION_HOURS}
