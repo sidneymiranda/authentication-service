@@ -5,7 +5,7 @@ import com.github.sidneymiranda.authservice.domain.user.LoginResponseDTO;
 import com.github.sidneymiranda.authservice.domain.user.RegisterDTO;
 import com.github.sidneymiranda.authservice.domain.user.RegisterResponse;
 import com.github.sidneymiranda.authservice.domain.user.User;
-import com.github.sidneymiranda.authservice.domain.user.UserRole;
+import com.github.sidneymiranda.authservice.exception.UserAlreadyExistsException;
 import com.github.sidneymiranda.authservice.infra.security.TokenService;
 import com.github.sidneymiranda.authservice.repository.UserRepository;
 import jakarta.validation.Valid;
@@ -57,7 +57,9 @@ public class AuthController {
     @PostMapping("/register")
     @Transactional
     public ResponseEntity<RegisterResponse> register(@RequestBody @Valid RegisterDTO register) {
-        if (this.userRepository.findByLogin(register.login()).isPresent()) return ResponseEntity.badRequest().build();
+        if (this.userRepository.findByLogin(register.login()).isPresent()) {
+            throw new UserAlreadyExistsException("A user with the login already exists: " + register.login());
+        }
 
         String encryptedPassword = this.passwordEncoder.encode(register.password());
 
