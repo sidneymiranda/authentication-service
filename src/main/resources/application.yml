@@ -1,7 +1,0 @@
-spring:
-  profiles:
-    active: DEV
-api:
-  security:
-    token:
-      secret: ${API_SECURITY_TOKEN_SECRET:test}
