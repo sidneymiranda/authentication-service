@@ -5,11 +5,13 @@ import com.github.sidneymiranda.authservice.domain.user.LoginResponseDTO;
 import com.github.sidneymiranda.authservice.domain.user.RegisterDTO;
 import com.github.sidneymiranda.authservice.domain.user.RegisterResponse;
 import com.github.sidneymiranda.authservice.domain.user.User;
+import com.github.sidneymiranda.authservice.domain.user.UserRole;
 import com.github.sidneymiranda.authservice.exception.UserAlreadyExistsException;
 import com.github.sidneymiranda.authservice.infra.security.TokenService;
 import com.github.sidneymiranda.authservice.repository.UserRepository;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -46,9 +48,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@RequestBody @Valid AuthenticationDTO authRequest) {
         var usernamePassword = new UsernamePasswordAuthenticationToken(authRequest.login(), authRequest.password());
-
         var auth = this.authenticationManager.authenticate(usernamePassword);
-
         var token = this.tokenService.generateToken((org.springframework.security.core.userdetails.UserDetails) Objects.requireNonNull(auth.getPrincipal()));
 
         return ResponseEntity.ok(new LoginResponseDTO(token));
@@ -57,13 +57,25 @@ public class AuthController {
     @PostMapping("/register")
     @Transactional
     public ResponseEntity<RegisterResponse> register(@RequestBody @Valid RegisterDTO register) {
+        return this.createUser(register, UserRole.USER);
+    }
+
+    @PostMapping("/register/admin")
+    @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<RegisterResponse> registerAdmin(@RequestBody @Valid RegisterDTO register) {
+        UserRole role = register.isAdmin() != null && register.isAdmin() ? UserRole.ADMIN : UserRole.USER;
+        return this.createUser(register, role);
+    }
+
+    private ResponseEntity<RegisterResponse> createUser(RegisterDTO register, UserRole role) {
         if (this.userRepository.findByLogin(register.login()).isPresent()) {
             throw new UserAlreadyExistsException("A user with the login already exists: " + register.login());
         }
 
         String encryptedPassword = this.passwordEncoder.encode(register.password());
 
-        var newUser = new User(register.login(), encryptedPassword, register.role());
+        var newUser = new User(register.login(), encryptedPassword, role.name());
         var savedUser = this.userRepository.save(newUser);
 
         RegisterResponse response = new RegisterResponse("User successfully registered", LocalDateTime.now());

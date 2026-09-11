@@ -33,7 +33,7 @@ public class User implements UserDetails {
     public User(String login, String password, String role) {
         this.login = login;
         this.password = password;
-        this.role = UserRole.USER.name().equals(role) ? UserRole.USER : UserRole.ADMIN;
+        this.role = UserRole.ADMIN.name().equals(role) ? UserRole.ADMIN : UserRole.USER;
     }
 
     @Override

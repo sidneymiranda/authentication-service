@@ -3,6 +3,7 @@ package com.github.sidneymiranda.authservice.infra.security;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
@@ -24,28 +25,29 @@ import java.nio.charset.StandardCharsets;
 @EnableMethodSecurity
 public class SecurityConfiguration {
 
-//    @Bean
-//    @Order(1)
-//    @Profile("DEV")
-//    public SecurityFilterChain h2ConsoleSecurityFilterChain(HttpSecurity httpSecurity) {
-//        return httpSecurity
-//                .securityMatcher("/h2-console/**")
-//                .csrf(AbstractHttpConfigurer::disable)
-//                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
-//                .headers(headers -> headers.contentSecurityPolicy(
-//                        csp -> csp.policyDirectives("frame-ancestors 'self'")))
-//                .build();
-//    }
+    @Bean
+    @Order(1)
+    @Profile("DEV")
+    public SecurityFilterChain h2ConsoleSecurityFilterChain(HttpSecurity httpSecurity) {
+        return httpSecurity
+                .securityMatcher("/h2-console/**")
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+                .headers(headers -> headers.contentSecurityPolicy(
+                        csp -> csp.policyDirectives("frame-ancestors 'self'")))
+                .build();
+    }
 
     @Bean
+    @Order(2)
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, SecurityFilter securityFilter) {
         return httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register").permitAll()
-                        .requestMatchers(HttpMethod.GET,"/test/admin").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.GET,"/test/user").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")
+                        .requestMatchers(HttpMethod.GET,"/test/admin").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET,"/test/user").hasAnyRole("ADMIN", "USER")
                         .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()
                 )
