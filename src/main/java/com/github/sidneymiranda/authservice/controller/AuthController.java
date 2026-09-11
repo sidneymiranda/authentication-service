@@ -5,6 +5,7 @@ import com.github.sidneymiranda.authservice.domain.user.LoginResponseDTO;
 import com.github.sidneymiranda.authservice.domain.user.RegisterDTO;
 import com.github.sidneymiranda.authservice.domain.user.RegisterResponse;
 import com.github.sidneymiranda.authservice.domain.user.User;
+import com.github.sidneymiranda.authservice.domain.user.UserRole;
 import com.github.sidneymiranda.authservice.exception.UserAlreadyExistsException;
 import com.github.sidneymiranda.authservice.infra.security.TokenService;
 import com.github.sidneymiranda.authservice.repository.UserRepository;
@@ -63,7 +64,7 @@ public class AuthController {
 
         String encryptedPassword = this.passwordEncoder.encode(register.password());
 
-        var newUser = new User(register.login(), encryptedPassword, register.role());
+        var newUser = new User(register.login(), encryptedPassword, UserRole.USER.name());
         var savedUser = this.userRepository.save(newUser);
 
         RegisterResponse response = new RegisterResponse("User successfully registered", LocalDateTime.now());
